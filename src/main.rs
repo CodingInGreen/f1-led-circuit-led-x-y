@@ -1,5 +1,6 @@
 use image::{GenericImageView, Rgba};
 use std::collections::HashSet;
+use csv::Writer;
 
 // Convert a hex color string to an RGB tuple
 fn hex_to_rgb(hex: &str) -> (u8, u8, u8) {
@@ -33,13 +34,20 @@ fn find_pixels_with_hex_color(image_path: &str, hex_color: &str) -> HashSet<(u32
 
 fn main() {
     let image_path = "100mmx100mm_top_left_pixel.png";
-    let hex_color = "#00ff24";  // Hex value for the green color
+    let hex_color = "#00ff24";  // Hex value for the specified color
 
     let color_coordinates = find_pixels_with_hex_color(image_path, hex_color);
 
+    let csv_path = "x_y_values_of_leds.csv";
+    let mut wtr = Writer::from_path(csv_path).expect("Failed to create CSV file");
+
+    // Write the header
+    wtr.write_record(&["x", "y"]).expect("Failed to write header");
+
+    // Write each x,y coordinate to the CSV file
     for coordinate in &color_coordinates {
-        println!("Coordinate: {:?}", coordinate);
+        wtr.write_record(&[coordinate.0.to_string(), coordinate.1.to_string()]).expect("Failed to write record");
     }
 
-    println!("Total number of pixels with specified hex color: {}", color_coordinates.len());
+    wtr.flush().expect("Failed to flush the CSV writer");
 }
